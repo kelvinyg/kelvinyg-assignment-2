@@ -7,6 +7,8 @@ name = "pypi"
 flask = "*"
 numpy = "*"
 plotly = "*"
+flake8 = "*"
+pytest = "*"
 
 [dev-packages]
 
