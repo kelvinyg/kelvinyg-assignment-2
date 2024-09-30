@@ -1,4 +1,4 @@
-name: Python application
+name: Python Application
 
 on:
   push:
@@ -14,25 +14,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v4
-    - name: Set up Python 3.10
-      uses: actions/setup-python@v3
-      with:
-        python-version: "3.10"
+      # 1. Checkout the repository
+      - uses: actions/checkout@v3
 
-    - name: Install dependencies using Makefile
-      run: |
-        # Upgrade pip and install dependencies using the Makefile
-        python -m pip install --upgrade pip
-        make install
+      # 2. Set up Python 3.10
+      - name: Set up Python 3.10
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
 
-    - name: Lint with flake8
-      run: |
-        # stop the build if there are Python syntax errors or undefined names
-        flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
-        # exit-zero treats all errors as warnings. The GitHub editor is 127 chars wide
-        flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
+      # 3. Install dependencies using Makefile
+      - name: Install dependencies
+        run: |
+          make install
 
-    - name: Run the Flask app using Makefile
-      run: |
-        make run
+      # 4. Run the application in the background
+      - name: Run the application
+        run: |
+          make run &  # Start Flask server in the background
+          sleep 10    # Allow the server time to start
+
+      # 5. Check if the server is running (use port 5000 for Flask by default)
+      - name: Check if server is running
+        run: |
+          curl --fail http://localhost:5000 || exit 1
+
+      # 6. Terminate the background Flask process
+      - name: Stop Flask server
+        run: |
+          kill %1
+
+      # 7. Lint the code with flake8
+      - name: Lint with flake8
+        run: |
+          # Install flake8 if not included in requirements.txt
+          pip install flake8
+          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --max-line-length=127 --statistics
