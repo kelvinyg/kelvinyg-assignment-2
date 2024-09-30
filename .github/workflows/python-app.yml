@@ -28,10 +28,11 @@ jobs:
         run: |
           make install
 
-      # 4. Run the application in the background
+      # 4. Run the application in the background and save the PID
       - name: Run the application
         run: |
           make run &  # Start Flask server in the background
+          echo $! > flask_pid.txt  # Save the Process ID (PID) to a file
           sleep 10    # Allow the server time to start
 
       # 5. Check if the server is running (use port 5000 for Flask by default)
@@ -39,10 +40,10 @@ jobs:
         run: |
           curl --fail http://localhost:5000 || exit 1
 
-      # 6. Terminate the background Flask process
+      # 6. Terminate the background Flask process using the PID
       - name: Stop Flask server
         run: |
-          kill %1
+          kill $(cat flask_pid.txt)
 
       # 7. Lint the code with flake8
       - name: Lint with flake8
